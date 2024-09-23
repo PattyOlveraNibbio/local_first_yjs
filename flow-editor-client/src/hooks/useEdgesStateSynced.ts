@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { type Edge, type OnEdgesChange, applyEdgeChanges } from '@xyflow/react';
-import ydoc from '../ydoc';
+import ydoc, { indexeddbProvider, webrtcProvider } from '../ydoc';
 
 export const edgesMap = ydoc.getMap<Edge>('edges');
 
@@ -49,10 +49,33 @@ function useEdgesStateSynced(): [
     const observer = () => {
       setEdges(Array.from(edgesMap.values()));
     };
-    setEdges(Array.from(edgesMap.values()));
+
+    indexeddbProvider.on('synced', () => {
+      console.log('Edge data synced with IndexedDB ');
+      setEdges(Array.from(edgesMap.values()));
+    });
+
+    webrtcProvider.on('synced', () => {
+        setEdges(Array.from(edgesMap.values()));
+    });
+
     edgesMap.observe(observer);
-    return () => edgesMap.unobserve(observer);
-  }, [setEdges]);
+
+    Promise.all([
+      indexeddbProvider.whenSynced,
+      new Promise<void>(resolve => {
+        webrtcProvider.on('synced', () => {
+            resolve();
+        });
+      })
+    ]).then(() => {
+      setEdges(Array.from(edgesMap.values()));
+    });
+
+    return () => {
+      edgesMap.unobserve(observer);
+    };
+  }, []);
 
   return [edges, setEdgesSynced, onEdgesChange];
 }

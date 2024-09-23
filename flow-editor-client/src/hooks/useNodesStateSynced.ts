@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { type Node, type OnNodesChange, applyNodeChanges, getConnectedEdges } from '@xyflow/react';
-import ydoc from '../ydoc';
+import ydoc, { indexeddbProvider, webrtcProvider } from '../ydoc';
 import { edgesMap } from './useEdgesStateSynced';
+
 
 export const nodesMap = ydoc.getMap<Node>('nodes');
 
@@ -58,10 +59,34 @@ function useNodesStateSynced(): [
     const observer = () => {
       setNodes(Array.from(nodesMap.values()));
     };
-    setNodes(Array.from(nodesMap.values()));
+
+    indexeddbProvider.on('synced', () => {
+      console.log('Node data synced with indexeddb');
+      setNodes(Array.from(nodesMap.values()));
+    });
+
+    webrtcProvider.on('synced', () => {
+      console.log('Node data synced with webrtc');
+      setNodes(Array.from(nodesMap.values()));
+    });
+
     nodesMap.observe(observer);
-    return () => nodesMap.unobserve(observer);
-  }, [setNodes]);
+
+    Promise.all([
+      indexeddbProvider.whenSynced,
+      new Promise<void>(resolve => {
+        webrtcProvider.on('synced', () => {
+            resolve();
+        });
+      })
+    ]).then(() => {
+      setNodes(Array.from(nodesMap.values()));
+    });
+
+    return () => {
+      nodesMap.unobserve(observer);
+    };
+  }, []);
 
   return [nodes, setNodesSynced, onNodesChange];
 }
