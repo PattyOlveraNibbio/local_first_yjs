@@ -1,7 +1,7 @@
 import { stringToColor } from '../utils/utils';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useReactFlow } from '@xyflow/react';
-import ydoc from '../ydoc';
+import ydoc, { indexeddbProvider, webrtcProvider } from '../ydoc';
 
 const cursorsMap = ydoc.getMap<Cursor>('cursors');
 const cursorId = ydoc.clientID.toString();
@@ -51,9 +51,28 @@ export function useCursorStateSynced() {
     const observer = () => {
       setCursors([...cursorsMap.values()]);
     };
-    flush();
-    setCursors([...cursorsMap.values()]);
+
+    // Set up IndexedDB sync
+    indexeddbProvider.on('synced', () => {
+      console.log('Cursor data synced with IndexedDB');
+      flush();
+      setCursors([...cursorsMap.values()]);
+    });
+
+    webrtcProvider.on('synced', () => {
+        console.log('Cursor data synced with WebRTC');
+        flush();
+        setCursors([...cursorsMap.values()]);
+    });
+
     cursorsMap.observe(observer);
+
+    // Initial load from IndexedDB
+    indexeddbProvider.whenSynced.then(() => {
+      flush();
+      setCursors([...cursorsMap.values()]);
+    });
+
     return () => {
       cursorsMap.unobserve(observer);
       window.clearInterval(timer);

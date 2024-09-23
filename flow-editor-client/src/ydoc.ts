@@ -1,7 +1,17 @@
-import { Doc } from 'yjs';
-import { WebsocketProvider } from 'y-websocket';
+
+import { Doc } from 'yjs'
+import { WebrtcProvider } from 'y-webrtc'
+import { IndexeddbPersistence } from 'y-indexeddb';
+
 
 const ydoc = new Doc();
-export const provider = new WebsocketProvider('wss://your-cloudflare-worker-url.workers.dev', 'flow-editor-room', ydoc);
+
+export const webrtcProvider = new WebrtcProvider('REACTFLOW-COLLAB-EXAMPLE', ydoc);
+
+
+export const indexeddbProvider = new IndexeddbPersistence('REACTFLOW-COLLAB-EXAMPLE', ydoc);
+
 
 export default ydoc;
+
+
