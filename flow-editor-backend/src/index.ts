@@ -1,52 +1,27 @@
-import { DurableObjectState } from "@cloudflare/workers-types";
+import { CollaborativeFlow } from './objects/collaborative-flow';
 
-export interface Env {
-    COLLABORATIVE_FLOW: DurableObjectNamespace;
-}
-
-export class CollaborativeFlow {
-    state: DurableObjectState;
-    sessions: WebSocket[];
-
-    constructor(state: DurableObjectState) {
-        this.state = state;
-        this.sessions = [];
-    }
-
-    async fetch(request: Request) {
-        const upgradeHeader = request.headers.get('Upgrade');
-        if( !upgradeHeader || upgradeHeader !== 'websocket' ) {
-            return new Response('Expected Upgrade: websocket', { status: 426 });
-        }
-        const webSocketPair = new WebSocketPair();
-        const [client, server] = Object.values(webSocketPair);
-
-        server.accept();
-        this.sessions.push(server);
-
-        server.addEventListener('message', async (event) => {
-            this.sessions.forEach((session)=> {
-                if(session.readyState === WebSocket.OPEN) {
-                    session.send(event.data);
-                }
-            });
-        });
-
-        server.addEventListener('close', () => {
-            this.sessions = this.sessions.filter((session) => session !== server);
-        });
-
-        return new Response(null, {
-            status: 101,
-            webSocket: client
-        });
-    }
-}
+export { CollaborativeFlow };
 
 export default {
-    async fetch(request: Request, env: Env) {
-        const id = env.COLLABORATIVE_FLOW.idFromName('default');
-        const flowObject = env.COLLABORATIVE_FLOW.get(id);
-        return flowObject.fetch(request);
+    async fetch(request: Request, env: any, ctx: ExecutionContext): Promise<Response> {
+        const upgradeHeader = request.headers.get('Upgrade');
+
+        // Check if the request is a WebSocket upgrade request
+        if (!upgradeHeader || upgradeHeader.toLowerCase() !== 'websocket') {
+            return new Response('Expected WebSocket upgrade', { status: 426 });
+        }
+
+        try {
+            // Extract the path from the URL to determine which Durable Object to use
+            const url = new URL(request.url);
+            const id = env.REACTFLOW_COLLAB_EXAMPLE.idFromName(url.pathname); // Use path for naming the instance
+            const obj = env.REACTFLOW_COLLAB_EXAMPLE.get(id);
+
+            // Forward the WebSocket request to the Durable Object
+            return await obj.fetch(request);
+        } catch (error) {
+            console.error('Error in WebSocket handling:', error);
+            return new Response('Internal Server Error', { status: 500 });
+        }
     }
 };
