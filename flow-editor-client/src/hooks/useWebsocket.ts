@@ -7,25 +7,10 @@ interface UseWebSocketReturn {
   connectionStatus: string;
 }
 
-// Define types for your messages
-type Node = {
-  // Define the structure of your node here
-  id: string;
-  // Add other properties as needed
+type WebSocketMessage = {
+  type: string;
+  [key: string]: unknown;
 };
-
-type Edge = {
-  // Define the structure of your edge here
-  id: string;
-  // Add other properties as needed
-};
-
-type WebSocketMessage =
-  | { type: "state"; data: unknown }
-  | { type: "updateNodes"; nodes: Node[] }
-  | { type: "updateEdges"; edges: Edge[] }
-  | { type: "left"; id: string }
-  | { type: string; [key: string]: unknown }; // For unknown message types
 
 const useWebSocket = (url: string): UseWebSocketReturn => {
   const [isConnected, setIsConnected] = useState(false);

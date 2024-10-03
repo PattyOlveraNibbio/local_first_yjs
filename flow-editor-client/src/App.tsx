@@ -1,13 +1,13 @@
 import { DragEvent, useCallback, useEffect } from "react";
 import {
   ReactFlow,
-  Node,
   ReactFlowProvider,
   Controls,
   useReactFlow,
   NodeMouseHandler,
   OnConnect,
   addEdge,
+  type Node
 } from "@xyflow/react";
 import Sidebar from "./components/Sidebar";
 import useCursorStateSynced from "./hooks/useCursorStateSynced";
