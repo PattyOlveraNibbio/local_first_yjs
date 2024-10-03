@@ -1,11 +1,20 @@
 import { DragEvent } from 'react';
+import { indexeddbProvider} from '../ydoc';
 
 const onDragStart = (event: DragEvent, nodeType: string) => {
   event.dataTransfer.setData('application/reactflow', nodeType);
   event.dataTransfer.effectAllowed = 'move';
 };
 
+
 const Sidebar = () => {
+  const clearIndexedDB = () => {
+    indexeddbProvider.clearData();
+    console.log('IndexedDB cleared');
+    window.location.reload(); // Reload the page to ensure a fresh state
+  };
+
+
   return (
     <aside>
       <div className="description">
@@ -32,6 +41,9 @@ const Sidebar = () => {
       >
         Output Node
       </div>
+      <button onClick={clearIndexedDB} className="reset-button">
+        Delete Local Database
+      </button>
     </aside>
   );
 };

@@ -1,9 +1,9 @@
-import { stringToColor } from '../utils/utils';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useReactFlow } from '@xyflow/react';
-import ydoc, { indexeddbProvider, webrtcProvider } from '../ydoc';
+import { stringToColor } from "../utils/utils";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useReactFlow } from "@xyflow/react";
+import ydoc, { indexeddbProvider } from "../ydoc";
 
-const cursorsMap = ydoc.getMap<Cursor>('cursors');
+const cursorsMap = ydoc.getMap<Cursor>("cursors");
 const cursorId = ydoc.clientID.toString();
 const cursorColor = stringToColor(cursorId);
 const MAX_IDLE_TIME = 10000;
@@ -53,21 +53,22 @@ export function useCursorStateSynced() {
     };
 
     // Set up IndexedDB sync
-    indexeddbProvider.on('synced', () => {
-      console.log('Cursor data synced with IndexedDB');
+    indexeddbProvider.on("synced", () => {
+      console.log("Cursor data synced with IndexedDB");
       flush();
       setCursors([...cursorsMap.values()]);
     });
 
-    webrtcProvider.on('synced', () => {
-        console.log('Cursor data synced with WebRTC');
-        flush();
-        setCursors([...cursorsMap.values()]);
-    });
+    // We will use cloudflare durable objects for syncing cursors
+
+    // webrtcProvider.on('synced', () => {
+    //     console.log('Cursor data synced with WebRTC');
+    //     flush();
+    //     setCursors([...cursorsMap.values()]);
+    // });
 
     cursorsMap.observe(observer);
 
-    // Initial load from IndexedDB
     indexeddbProvider.whenSynced.then(() => {
       flush();
       setCursors([...cursorsMap.values()]);

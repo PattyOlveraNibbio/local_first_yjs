@@ -7,16 +7,17 @@
 		"dev": "wrangler dev",
 		"start": "wrangler dev",
 		"cf-typegen": "wrangler types",
-		"build": "webpack"
+		"build": "tsc"
 	},
 	"dependencies": {
+		"@xyflow/react": "^12.3.0",
 		"chanfana": "^2.0.2",
 		"hono": "^4.4.7",
 		"zod": "^3.23.8"
 	},
 	"devDependencies": {
 		"@cloudflare/workers-types": "^4.20240909.0",
-		"@types/node": "20.8.3",
+		"@types/node": "^20.8.3",
 		"@types/service-worker-mock": "^2.0.1",
 		"ts-loader": "^9.5.1",
 		"webpack": "^5.94.0",

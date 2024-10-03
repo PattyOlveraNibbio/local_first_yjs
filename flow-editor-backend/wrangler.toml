@@ -1,10 +1,11 @@
 name = "flow-editor-backend"
 main = "src/index.ts"
 compatibility_date = "2023-01-01"
+service-worker = false
 
 [durable_objects]
 bindings = [
-  { name = "COLLABORATIVE_FLOW", class_name = "CollaborativeFlow" }
+  { name = "REACTFLOW_COLLAB_EXAMPLE", class_name = "CollaborativeFlow" }
 ]
 
 [[migrations]]
@@ -13,4 +14,3 @@ new_classes = ["CollaborativeFlow"]
 
 [build]
 command = "npm run build"
-
